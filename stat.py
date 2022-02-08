@@ -2,6 +2,7 @@ import sys
 import getopt
 import pandas as pd
 import re
+import math
 
 
 def trim_space(s):
@@ -15,10 +16,11 @@ def main(argv):
     parameter = '3323'
     mode = '1'
     parameter = 'bai vvv vv vvv,012 000 00 000;bai tou er xin,012 010 10 001'
+    num = 3
     try:
-        opts, args = getopt.getopt(argv, "hm:p:", ["mode=", "parameter="])
+        opts, args = getopt.getopt(argv, "hm:p:n:", ["mode=", "parameter=", "num="])
     except getopt.GetoptError:
-        print('test.py -m <mode> -p <parameter>')
+        print('test.py -m <mode> -p <parameter> -n <num>')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
@@ -28,13 +30,17 @@ def main(argv):
             mode = arg
         elif opt in ("-p", "--parameter"):
             parameter = arg
-    df = pd.read_json('idiom.json')
+        elif opt in ("-n", "--num"):
+            num = int(arg)
+    all_idiom = pd.read_json('idiom.json')
+    idiom_frequency = pd.read_csv('idiom_frequency.csv')
+    all_idiom = all_idiom.merge(idiom_frequency, how='left', on='word')
+    all_idiom['frequency'] = all_idiom['frequency'].fillna(1).astype(int)
     if mode == '0':
-        df['pinyin_rt'] = df.apply(lambda x: ''.join(map(lambda y: str(len(y)), re.split('[ ,，]',x['pinyin_r']))), axis=1)
-        groups = df.groupby(by='pinyin_rt')
+        all_idiom['pinyin_rt'] = all_idiom.apply(lambda x: ''.join(map(lambda y: str(len(y)), re.split('[ ,，]',x['pinyin_r']))), axis=1)
+        groups = all_idiom.groupby(by='pinyin_rt')
         group = groups.get_group(parameter).copy()
-        group['pinyin_c'] = group.apply(lambda x: len(set(trim_space(x['pinyin_r']))), axis=1)
-        print(df.loc[group['pinyin_c'].idxmax()])
+        print_max_group(all_idiom, group, num)
     elif mode == '1':
         parameter_rst = parameter.split(';', 1)
         if len(parameter_rst) > 1:
@@ -47,8 +53,8 @@ def main(argv):
         parameter = trim_space(parameter.split(',')[0])
  
         count = ''.join([str(len(x)) for x in hits.split()])
-        df['pinyin_rt'] = df.apply(lambda x: ''.join(map(lambda y: str(len(y)), re.split('[ ,，]',x['pinyin_r']))), axis=1)
-        groups = df.groupby(by='pinyin_rt')
+        all_idiom['pinyin_rt'] = all_idiom.apply(lambda x: ''.join(map(lambda y: str(len(y)), re.split('[ ,，]',x['pinyin_r']))), axis=1)
+        groups = all_idiom.groupby(by='pinyin_rt')
         group = groups.get_group(count).copy()
 
         while(True):
@@ -67,8 +73,13 @@ def main(argv):
                 return
             else:
                 break
-        group['pinyin_c'] = group.apply(lambda x: len(set(trim_space(x['pinyin_r']))), axis=1)
-        print(df.loc[group['pinyin_c'].idxmax()])
+        print_max_group(all_idiom, group, num)
+
+def print_max_group(all_idiom, group, num):
+    group['pinyin_c'] = group.apply(lambda x: (math.log(x['frequency'], 2)/16 + 1) * len(set(trim_space(x['pinyin_r']))), axis=1)
+    list = group.nlargest(num, ['pinyin_c', 'frequency']).index.tolist()
+    for i in list:
+        print(all_idiom.loc[i])
 
 def filter_group_mode1(parameter, group, hits):
     for i in range(len(parameter)):
