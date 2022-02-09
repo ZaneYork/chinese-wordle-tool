@@ -44,9 +44,9 @@ def main(argv):
     parameter = 'bai vvv vv vvv,012 000 00 000;bai tou er xin,012 010 10 001'
     mode = '2'
     parameter = '1234'
-    mode = '3'
-    parameter = '风调雨顺 1234,00 00 00 20 1111;无所不包 2341,00 00 00 00 2121;得心应手 2143,01 00 00 20 2222'
-    num = 100
+#    mode = '3'
+#    parameter = '风调雨顺 1234,00 00 00 20 1111;无所不包 2341,00 00 00 00 2121;得心应手 2143,01 00 00 20 2222'
+    num = 3
     try:
         opts, args = getopt.getopt(argv, "hm:p:n:", ["mode=", "parameter=", "num="])
     except getopt.GetoptError:
@@ -111,10 +111,12 @@ def main(argv):
                 break
         print_max_group(all_idiom, group, num)
     elif mode == '2':
+        all_idiom = all_idiom[all_idiom['word'].str.len() == 4]
         all_idiom['pinyin_tone'] = all_idiom.apply(lambda x: get_tone(x['pinyin']), axis=1)
         group = all_idiom[all_idiom['pinyin_tone'].str.startswith(parameter)].copy()
         print_max_group(all_idiom, group, num)
     elif mode == '3':
+        all_idiom = all_idiom[all_idiom['word'].str.len() == 4]
         parameter_rst = parameter.split(';', 1)
         if len(parameter_rst) > 1:
             parameter_rst = parameter_rst[1]
@@ -129,7 +131,6 @@ def main(argv):
         parameter = parameter[:-5]
         hits=hits[:-5]
 
-        all_idiom = all_idiom[all_idiom['word'].str.len() == 4]
         all_idiom['pinyin_tone'] = all_idiom.apply(lambda x: get_tone(x['pinyin']), axis=1)
         group = all_idiom.copy()
         while(True):
