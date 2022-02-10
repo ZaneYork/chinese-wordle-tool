@@ -65,7 +65,7 @@
                 $("#parameter").val('')
             })
             $('#submit').on('click', function () {
-                $.get('/predict', { mode: $("input[name='mode'][checked]").val(), parameter: $('#parameter').val() }, function (result) {
+                $.get('/predict', { mode: $("input[name='mode']:checked").val(), parameter: $('#parameter').val() }, function (result) {
                     if(result && result.status === 0){
                         text = result.result.map(function(item){
                             return item.word + '\t' + item.pinyin
