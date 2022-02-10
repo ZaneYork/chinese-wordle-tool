@@ -3,7 +3,6 @@ import getopt
 import pandas as pd
 import re
 import math
-import json
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from pypinyin import pinyin, lazy_pinyin, Style
@@ -224,7 +223,7 @@ def get_max_group(all_idiom, group, num):
     ret_list = group.nlargest(num, ['pinyin_c', 'frequency']).index.tolist()
     result = list()
     for i in ret_list:
-        result.append(json.loads(all_idiom.loc[i].to_json(orient = 'index',force_ascii=False)))
+        result.append(all_idiom.loc[i].to_dict())
     return result
 
 '''
