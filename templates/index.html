@@ -2,50 +2,61 @@
 
 <head>
     <title>Chinese Wordle Tools</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
-        integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 </head>
 
 <body>
-    <form id="para" class="form-horizontal">
-        <div class="form-group">
-            <label class="col-sm-2 control-label">模式</label>
+    <form id="para" class="form-horizontal container">
+        <div class="form-group  row">
+            <label class="col-sm-2 col-form-label">模式</label>
             <div class="col-sm-8">
-                <label class="radio-inline">
-                    <input type="radio" name="mode" value="0" checked> 0
-                </label>
-                <label class="radio-inline">
-                    <input type="radio" name="mode" value="1"> 1
-                </label>
-                <label class="radio-inline">
-                    <input type="radio" name="mode" value="2"> 2
-                </label>
-                <label class="radio-inline">
-                    <input type="radio" name="mode" value="3"> 3
-                </label>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="mode" id="mode0" value="0" checked>
+                    <label class="form-check-label" for="mode0">0</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="mode" id="mode1" value="1">
+                    <label class="form-check-label" for="mode1">1</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="mode" id="mode2" value="2">
+                    <label class="form-check-label" for="mode2">2</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="mode" id="mode3" value="3">
+                    <label class="form-check-label" for="mode3">3</label>
+                  </div>
             </div>
         </div>
-        <div class="form-group">
-            <label for="parameter" class="col-sm-2 control-label">参数</label>
+        <div class="form-group row">
+            <label for="parameter" class="col-sm-2 col-form-label">参数</label>
             <div class="col-sm-8">
                 <input type="text" id="parameter" name="parameter" class="form-control" placeholder="4234">
             </div>
         </div>
-        <div class="form-group">
-            <label for="result" class="col-sm-2 control-label">结果</label>
+        <div class="form-group row">
+            <label for="result" class="col-sm-2 col-form-label">结果</label>
             <div class="col-sm-8">
                 <textarea id="result" class="form-control" rows="6" readonly></textarea>
             </div>
         </div>
-        <div class="form-group">
-            <div class="col-sm-offset-2 col-sm-8">
-                <button id="submit" type="button" class="btn btn-default">提交</button>
+        <div class="form-group row">
+            <div class="col-sm-10">
+                <button id="submit" type="button" class="btn btn-primary form-control">提交</button>
             </div>
         </div>
     </form>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <script>
         $(document).ready(function () {
             $('input[name=mode]').on('click', function (e) {
