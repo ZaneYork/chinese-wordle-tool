@@ -6,11 +6,26 @@ import math
 import json
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
-from pypinyin import pinyin, lazy_pinyin, Style
+from pypinyin import pinyin, lazy_pinyin, Style, style
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 CORS(app)
+
+TONE_TABLE = [
+    set(['ā', 'ē', 'ī', 'ō', 'ū', 'ǖ']),
+    set(['á', 'é', 'í', 'ó', 'ú', 'ǘ']),
+    set(['ǎ', 'ě', 'ǐ', 'ǒ', 'ǔ', 'ǚ']),
+    set(['à', 'è', 'ì', 'ò', 'ù', 'ǜ']),
+]
+
+def tone_only(pinyin, **kwargs):
+    for i in range(4):
+        if len(set(pinyin).intersection(TONE_TABLE[i])) > 0:
+            return str(i + 1)
+    return '5'
+
+style.register('TONE_ONLY', tone_only)
 
 def trim_space(s):
     return s.replace(' ', '').replace(',', '').replace('，', '')
@@ -23,26 +38,6 @@ def compute_pinyin(s, style=None):
         return ' '.join(lazy_pinyin(s))
     else:
         return ' '.join(lazy_pinyin(s, style=style))
-
-TONE_TABLE = [
-    set(['ā', 'ē', 'ī', 'ō', 'ū', 'ǖ']),
-    set(['á', 'é', 'í', 'ó', 'ú', 'ǘ']),
-    set(['ǎ', 'ě', 'ǐ', 'ǒ', 'ǔ', 'ǚ']),
-    set(['à', 'è', 'ì', 'ò', 'ù', 'ǜ']),
-]
-
-def get_tone(s):
-    result = list()
-    for p in s.split(' '):
-        hit = False
-        for i in range(4):
-            if len(set(p).intersection(TONE_TABLE[i])) > 0:
-                result.append(str(i + 1))
-                hit = True
-                break
-        if not hit:
-            result.append('5')
-    return ''.join(result)
 
 def main(argv):
     mode = '0'
@@ -84,10 +79,11 @@ def filter_logic(mode, parameter):
         all_idiom = all_idiom.merge(idiom_frequency, how='outer', on='word')
         all_idiom['frequency'] = all_idiom['frequency'].fillna(1).astype(int)
         all_idiom['pinyin_r'] = all_idiom.apply(lambda x: compute_pinyin(x['word']) if x['pinyin_r'] else x['pinyin_r'], axis=1)
+        all_idiom['pinyin_rt'] = all_idiom.apply(lambda x: ''.join(map(lambda y: str(len(y)), re.split('[ ,，]',x['pinyin_r']))), axis=1)
         all_idiom['pinyin'] = all_idiom.apply(lambda x: compute_pinyin(x['word'], style=Style.TONE) if x['pinyin'] else x['pinyin'], axis=1)
+        all_idiom['pinyin_tone'] = all_idiom.apply(lambda x: ''.join(lazy_pinyin(x['word'], style="TONE_ONLY")), axis=1)
         all_idiom.to_csv("all_idiom.csv")
     if mode == '0':
-        all_idiom['pinyin_rt'] = all_idiom.apply(lambda x: ''.join(map(lambda y: str(len(y)), re.split('[ ,，]',x['pinyin_r']))), axis=1)
         groups = all_idiom.groupby(by='pinyin_rt')
         group = groups.get_group(parameter).copy()
         return all_idiom, group
@@ -103,7 +99,6 @@ def filter_logic(mode, parameter):
         parameter = trim_space(parameter.split(',')[0])
  
         count = ''.join([str(len(x)) for x in hits.split()])
-        all_idiom['pinyin_rt'] = all_idiom.apply(lambda x: ''.join(map(lambda y: str(len(y)), re.split('[ ,，]',x['pinyin_r']))), axis=1)
         groups = all_idiom.groupby(by='pinyin_rt')
         group = groups.get_group(count).copy()
 
@@ -125,7 +120,6 @@ def filter_logic(mode, parameter):
         return all_idiom, group
     elif mode == '2':
         all_idiom = all_idiom[all_idiom['word'].str.len() == 4]
-        all_idiom['pinyin_tone'] = all_idiom.apply(lambda x: get_tone(x['pinyin']), axis=1)
         group = all_idiom[all_idiom['pinyin_tone'].str.startswith(parameter)].copy()
         return all_idiom, group
     elif mode == '3':
@@ -145,7 +139,6 @@ def filter_logic(mode, parameter):
         parameter = parameter[:-5]
         hits=hits[:-10]
 
-        all_idiom['pinyin_tone'] = all_idiom.apply(lambda x: get_tone(x['pinyin']), axis=1)
         group = all_idiom.copy()
         while(True):
             group = filter_group_model2(parameter, group, hits, tones, tone_hits, word_hits)
