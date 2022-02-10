@@ -43,9 +43,9 @@ def main(argv):
     mode = '1'
     parameter = 'bai vvv vv vvv,012 000 00 000;bai tou er xin,012 010 10 001'
     mode = '2'
-    parameter = '1234'
-#    mode = '3'
-#    parameter = '风调雨顺 1234,00 00 00 20 1111;无所不包 2341,00 00 00 00 2121;得心应手 2143,01 00 00 20 2222'
+    parameter = '2134'
+    mode = '3'
+    parameter = '行之有效 2134,00 11 10 00 0100 1101;各执一词 4212,00 11 12 22 0010 1022'
     num = 3
     try:
         opts, args = getopt.getopt(argv, "hm:p:n:", ["mode=", "parameter=", "num="])
@@ -128,13 +128,14 @@ def main(argv):
         parameter = parameter.split(',')[0]
         tones = parameter[-4:]
         tone_hits=hits[-4:]
+        word_hits=hits[-9:-5]
         parameter = parameter[:-5]
-        hits=hits[:-5]
+        hits=hits[:-10]
 
         all_idiom['pinyin_tone'] = all_idiom.apply(lambda x: get_tone(x['pinyin']), axis=1)
         group = all_idiom.copy()
         while(True):
-            group = filter_group_model2(parameter, group, hits, tones, tone_hits)
+            group = filter_group_model2(parameter, group, hits, tones, tone_hits, word_hits)
             if(len(group) > 1 and len(parameter_rst) > 0):
                 parameter = parameter_rst.split(';')[0]
                 parameter_rst = parameter_rst.split(';', 1)
@@ -147,8 +148,9 @@ def main(argv):
                 parameter = parameter.split(',')[0]
                 tones = parameter[-4:]
                 tone_hits=hits[-4:]
+                word_hits=hits[-9:-5]
                 parameter = parameter[:-5]
-                hits=hits[:-5]
+                hits=hits[:-10]
             elif len(group) <= 0:
                 print('未找到匹配项')
                 return
@@ -156,16 +158,13 @@ def main(argv):
                 break
         print_max_group(all_idiom, group, num)
 
-def filter_group_model2(parameter, group, hits, tones, tone_hits):
-    for i in range(4):
-        if tone_hits[i] == '0':
-            group = group[~group['pinyin_tone'].str.contains(tones[i])]
-        elif tone_hits[i] == '1':
-            group = group[(group['pinyin_tone'].str[i] != tones[i]) & group['pinyin_tone'].str.contains(tones[i])]
-        elif tone_hits[i] == '2':
-            group = group[group['pinyin_tone'].str[i] == tones[i]]
-        if len(group) <= 1:
-            break
+def filter_group_model2(parameter, group, hits, tones, tone_hits, word_hits):
+    group = filter_with_target_field(group, 'word', parameter, word_hits)
+    if len(group) <= 1:
+        return group
+    group = filter_with_target_field(group, 'pinyin_tone', tones, tone_hits)
+    if len(group) <= 1:
+        return group
     group['pinyin_0' ] = group.apply(lambda x: ','.join(list(lazy_pinyin(x['word'], style=Style.INITIALS, strict=False))), axis=1)
     group['pinyin_1'] = group.apply(lambda x: ','.join(list(lazy_pinyin(x['word'], style=Style.FINALS, strict=False))), axis=1)
     hits = hits.split()
@@ -175,7 +174,6 @@ def filter_group_model2(parameter, group, hits, tones, tone_hits):
         targets.append(lazy_pinyin(target, style=Style.INITIALS, strict=False)[0])
         targets.append(lazy_pinyin(target, style=Style.FINALS, strict=False)[0])
         pinyin_hit = hits[i]
-        outer_break = False
         for j in range(2):
             if pinyin_hit[j] == '0':
                 group = group[group['pinyin_%d' % j].str.count('(^|[,])%s([,]|$)' + targets[j]) == 0]
@@ -184,9 +182,23 @@ def filter_group_model2(parameter, group, hits, tones, tone_hits):
             elif pinyin_hit[j] == '2':
                 group = group[group['pinyin_%d' % j].str.count(('^(\w*,){%d}%s([,]|$)' % (i, targets[j]))) > 0]
             if len(group) <= 1:
-                outer_break = True
-                break
-        if outer_break:
+                return group
+    return group
+
+def filter_with_target_field(group, field_name, values, value_hits):
+    includes_value = set()
+    for i in range(4):
+        if value_hits[i] == '2':
+            includes_value.add(values[i])
+    for i in range(4):
+        if value_hits[i] == '0' and values[i] not in includes_value:
+            group = group[~group[field_name].str.contains(values[i])]
+        elif value_hits[i] == '1':
+            group = group[(group[field_name].str[i] != values[i]) & group[field_name].str.contains(values[i])]
+            includes_value.add(values[i])
+        elif value_hits[i] == '2':
+            group = group[group[field_name].str[i] == values[i]]
+        if len(group) <= 1:
             break
     return group
 
