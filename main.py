@@ -205,9 +205,9 @@ def filter_with_target_field(group, field_name, values, value_hits):
             includes_value.add(values[i])
     for i in range(4):
         if value_hits[i] == '0' and values[i] not in includes_value:
-            group = group[~group[field_name].str.contains(values[i])]
+            group = group[~group[field_name].str.contains(values[i], regex=False, case=True, na=False)]
         elif value_hits[i] == '1':
-            group = group[(group[field_name].str[i] != values[i]) & group[field_name].str.contains(values[i])]
+            group = group[(group[field_name].str[i] != values[i]) & group[field_name].str.contains(values[i], regex=False, case=True, na=False)]
             includes_value.add(values[i])
         elif value_hits[i] == '2':
             group = group[group[field_name].str[i] == values[i]]
@@ -249,9 +249,9 @@ def filter_group_mode1(parameter, group, hits):
         key2 = 'pinyin2_%d' % i
         target = parameter[i]
         if hit == '0' and target not in includes:
-            group = group[~group[key0].str.contains(target)]
+            group = group[~group[key0].str.contains(target, regex=False, case=True, na=False)]
         elif hit == '1':
-            group = group[(group[key2] != target) & (group[key1].str.contains(target))]
+            group = group[(group[key2] != target) & (group[key1].str.contains(target, regex=False, case=True, na=False))]
             includes.add(target)
         elif hit == '2':
             group = group[group[key2] == target]
