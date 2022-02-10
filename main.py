@@ -85,6 +85,8 @@ def init():
         all_idiom['pinyin_rt'] = all_idiom.apply(lambda x: ''.join(map(lambda y: str(len(y)), re.split('[ ,，]',x['pinyin_r']))), axis=1)
         all_idiom['pinyin'] = all_idiom.apply(lambda x: compute_pinyin(x['word'], style=Style.TONE) if x['pinyin'] else x['pinyin'], axis=1)
         all_idiom['pinyin_tone'] = all_idiom.apply(lambda x: ''.join(lazy_pinyin(x['word'], style="TONE_ONLY")), axis=1)
+        all_idiom['pinyin_initials' ] = all_idiom.apply(lambda x: ','.join(list(lazy_pinyin(x['word'], style=Style.INITIALS, strict=False))), axis=1)
+        all_idiom['pinyin_finals'] = all_idiom.apply(lambda x: ','.join(list(lazy_pinyin(x['word'], style=Style.FINALS, strict=False))), axis=1)
         all_idiom.to_csv("all_idiom.csv")
 
 def filter_logic(mode, parameter):
@@ -177,8 +179,6 @@ def filter_group_model2(parameter, group, hits, tones, tone_hits, word_hits):
     group = filter_with_target_field(group, 'word', parameter, word_hits)
     if len(group) <= 1:
         return group
-    group['pinyin_0' ] = group.apply(lambda x: ','.join(list(lazy_pinyin(x['word'], style=Style.INITIALS, strict=False))), axis=1)
-    group['pinyin_1'] = group.apply(lambda x: ','.join(list(lazy_pinyin(x['word'], style=Style.FINALS, strict=False))), axis=1)
     hits = hits.split()
     for i in range(4):
         target = parameter[i]
@@ -186,13 +186,14 @@ def filter_group_model2(parameter, group, hits, tones, tone_hits, word_hits):
         targets.append(lazy_pinyin(target, style=Style.INITIALS, strict=False)[0])
         targets.append(lazy_pinyin(target, style=Style.FINALS, strict=False)[0])
         pinyin_hit = hits[i]
-        for j in range(2):
+        for j,name in enumerate(['initials', 'finals']):
+            key = 'pinyin_%s' % name
             if pinyin_hit[j] == '0':
-                group = group[group['pinyin_%d' % j].str.count('(^|[,])%s([,]|$)' + targets[j]) == 0]
+                group = group[group[key].str.count('(^|[,])%s([,]|$)' + targets[j]) == 0]
             elif pinyin_hit[j] == '1':
-                group = group[(group['pinyin_%d' % j].str.count('(^|[,])%s([,]|$)' % targets[j]) > 0) & (group['pinyin_%d' % j].str.count(('^(\w*,){%d}%s([,]|$)' % (i, targets[j]))) == 0)]
+                group = group[(group[key].str.count('(^|[,])%s([,]|$)' % targets[j]) > 0) & (group[key].str.count(('^(\w*,){%d}%s([,]|$)' % (i, targets[j]))) == 0)]
             elif pinyin_hit[j] == '2':
-                group = group[group['pinyin_%d' % j].str.count(('^(\w*,){%d}%s([,]|$)' % (i, targets[j]))) > 0]
+                group = group[group[key].str.count(('^(\w*,){%d}%s([,]|$)' % (i, targets[j]))) > 0]
             if len(group) <= 1:
                 return group
     return group
