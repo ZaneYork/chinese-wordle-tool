@@ -70,7 +70,10 @@ def main(argv):
     else:
         print('未找到匹配项')
 
-def filter_logic(mode, parameter):
+all_idiom = None
+
+def init():
+    global all_idiom
     if os.path.exists("all_idiom.csv"):
         all_idiom = pd.read_csv('all_idiom.csv')
     else:
@@ -83,6 +86,9 @@ def filter_logic(mode, parameter):
         all_idiom['pinyin'] = all_idiom.apply(lambda x: compute_pinyin(x['word'], style=Style.TONE) if x['pinyin'] else x['pinyin'], axis=1)
         all_idiom['pinyin_tone'] = all_idiom.apply(lambda x: ''.join(lazy_pinyin(x['word'], style="TONE_ONLY")), axis=1)
         all_idiom.to_csv("all_idiom.csv")
+
+def filter_logic(mode, parameter):
+    global all_idiom
     if mode == '0':
         groups = all_idiom.groupby(by='pinyin_rt')
         group = groups.get_group(parameter).copy()
@@ -119,11 +125,11 @@ def filter_logic(mode, parameter):
                 break
         return all_idiom, group
     elif mode == '2':
-        all_idiom = all_idiom[all_idiom['word'].str.len() == 4]
-        group = all_idiom[all_idiom['pinyin_tone'].str.startswith(parameter)].copy()
-        return all_idiom, group
+        four_idiom = all_idiom[all_idiom['word'].str.len() == 4]
+        group = four_idiom[four_idiom['pinyin_tone'].str.startswith(parameter)].copy()
+        return four_idiom, group
     elif mode == '3':
-        all_idiom = all_idiom[all_idiom['word'].str.len() == 4]
+        four_idiom = all_idiom[all_idiom['word'].str.len() == 4]
         parameter_rst = parameter.split(';', 1)
         if len(parameter_rst) > 1:
             parameter_rst = parameter_rst[1]
@@ -139,7 +145,7 @@ def filter_logic(mode, parameter):
         parameter = parameter[:-5]
         hits=hits[:-10]
 
-        group = all_idiom.copy()
+        group = four_idiom.copy()
         while(True):
             group = filter_group_model2(parameter, group, hits, tones, tone_hits, word_hits)
             if(len(group) > 1 and len(parameter_rst) > 0):
@@ -161,7 +167,7 @@ def filter_logic(mode, parameter):
                 break
             else:
                 break
-        return all_idiom, group
+        return four_idiom, group
     return None, None
 
 def filter_group_model2(parameter, group, hits, tones, tone_hits, word_hits):
@@ -267,5 +273,6 @@ def index():
 if __name__ == '__main__':
     current_work_dir = os.path.dirname(__file__)
     os.chdir(current_work_dir)
+    init()
     # main(sys.argv[1:])
     app.run(debug=True, host="0.0.0.0")
