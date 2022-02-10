@@ -40,12 +40,12 @@ def compute_pinyin(s, style=None):
         return ' '.join(lazy_pinyin(s, style=style))
 
 def main(argv):
-    mode = '0'
-    parameter = '3323'
-    mode = '1'
-    parameter = 'bai vvv vv vvv,012 000 00 000;bai tou er xin,012 010 10 001'
-    mode = '2'
-    parameter = '2134'
+    # mode = '0'
+    # parameter = '3323'
+    # mode = '1'
+    # parameter = 'bai vvv vv vvv,012 000 00 000;bai tou er xin,012 010 10 001'
+    # mode = '2'
+    # parameter = '2134'
     mode = '3'
     parameter = '行之有效 2134,00 11 10 00 0100 1101;各执一词 4212,00 11 12 22 0010 1022'
     num = 3
@@ -82,7 +82,7 @@ def init():
         all_idiom = all_idiom.merge(idiom_frequency, how='outer', on='word')
         all_idiom['frequency'] = all_idiom['frequency'].fillna(1).astype(int)
         all_idiom['pinyin_r'] = all_idiom.apply(lambda x: compute_pinyin(x['word']) if x['pinyin_r'] else x['pinyin_r'], axis=1)
-        all_idiom['pinyin_rt'] = all_idiom.apply(lambda x: ''.join(map(lambda y: str(len(y)), re.split('[ ,，]',x['pinyin_r']))), axis=1)
+        all_idiom['pinyin_rt'] = all_idiom.apply(lambda x: int(''.join(map(lambda y: str(len(y)), re.split('[ ,，]',x['pinyin_r'])))), axis=1)
         all_idiom['pinyin'] = all_idiom.apply(lambda x: compute_pinyin(x['word'], style=Style.TONE) if x['pinyin'] else x['pinyin'], axis=1)
         all_idiom['pinyin_tone'] = all_idiom.apply(lambda x: ''.join(lazy_pinyin(x['word'], style="TONE_ONLY")), axis=1)
         all_idiom['pinyin_initials' ] = all_idiom.apply(lambda x: ','.join(list(lazy_pinyin(x['word'], style=Style.INITIALS, strict=False))), axis=1)
@@ -93,7 +93,7 @@ def filter_logic(mode, parameter):
     global all_idiom
     if mode == '0':
         groups = all_idiom.groupby(by='pinyin_rt')
-        group = groups.get_group(parameter).copy()
+        group = groups.get_group(int(parameter)).copy()
         return all_idiom, group
     elif mode == '1':
         parameter_rst = parameter.split(';', 1)
@@ -108,7 +108,7 @@ def filter_logic(mode, parameter):
  
         count = ''.join([str(len(x)) for x in hits.split()])
         groups = all_idiom.groupby(by='pinyin_rt')
-        group = groups.get_group(count).copy()
+        group = groups.get_group(int(count)).copy()
 
         while(True):
             group = filter_group_mode1(parameter, group, hits)
