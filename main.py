@@ -4,7 +4,7 @@ import pandas as pd
 import re
 import math
 import json
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 from pypinyin import pinyin, lazy_pinyin, Style
 
@@ -172,10 +172,10 @@ def filter_logic(mode, parameter):
     return None, None
 
 def filter_group_model2(parameter, group, hits, tones, tone_hits, word_hits):
-    group = filter_with_target_field(group, 'word', parameter, word_hits)
+    group = filter_with_target_field(group, 'pinyin_tone', tones, tone_hits)
     if len(group) <= 1:
         return group
-    group = filter_with_target_field(group, 'pinyin_tone', tones, tone_hits)
+    group = filter_with_target_field(group, 'word', parameter, word_hits)
     if len(group) <= 1:
         return group
     group['pinyin_0' ] = group.apply(lambda x: ','.join(list(lazy_pinyin(x['word'], style=Style.INITIALS, strict=False))), axis=1)
@@ -266,6 +266,10 @@ def predict():
     all_idiom, group = filter_logic(mode, parameter)
     result = get_max_group(all_idiom, group, 3)
     return jsonify({'status': 0, 'message': 'success', 'result': result})
+
+@app.route('/', methods=['GET'])
+def index():
+    return render_template('index.html')
 
 if __name__ == '__main__':
     current_work_dir = os.path.dirname(__file__)
