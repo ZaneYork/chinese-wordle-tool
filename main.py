@@ -160,7 +160,7 @@ def filter_logic(mode, parameter):
         while(True):
             group = filter_group_mode1(parameter, group, hits)
             if(len(group) > 1 and len(parameter_rst) > 0):
-                parameter, parameter_rst = fetch_next_input(parameter)
+                parameter, parameter_rst = fetch_next_input(parameter_rst)
 
                 hits = parameter.split(',')[1]
                 parameter = trim_space(parameter.split(',')[0])
@@ -189,7 +189,7 @@ def filter_logic(mode, parameter):
         while(True):
             group = filter_group_model2(parameter, group, hits, tones, tone_hits, word_hits)
             if(len(group) > 1 and len(parameter_rst) > 0):
-                parameter, parameter_rst = fetch_next_input(parameter)
+                parameter, parameter_rst = fetch_next_input(parameter_rst)
 
                 hits = parameter.split(',')[1]
                 parameter = parameter.split(',')[0]
