@@ -48,7 +48,7 @@ def main(argv):
     # parameter = '2134'
     mode = '3'
     parameter = '行之有效 2134,00 11 10 00 0100 1101;各执一词 4212,00 11 12 22 0010 1022'
-    num = 3
+    num = 6
     try:
         opts, args = getopt.getopt(argv, "hm:p:n:", ["mode=", "parameter=", "num="])
     except getopt.GetoptError:
@@ -170,6 +170,14 @@ def filter_logic(mode, parameter):
             else:
                 break
         return four_idiom, group
+    elif mode == '4':
+        four_idiom = all_idiom[all_idiom['word'].str.len() == 4]
+        group = four_idiom[four_idiom['word'].str.count(parameter) > 0].copy()
+        return four_idiom, group
+    elif mode == '5':
+        four_idiom = all_idiom[all_idiom['word'].str.len() == 4]
+        group = four_idiom[four_idiom['pinyin_r'].str.count(parameter) > 0].copy()
+        return four_idiom, group
     return None, None
 
 def filter_group_model2(parameter, group, hits, tones, tone_hits, word_hits):
@@ -266,7 +274,7 @@ def predict():
     mode = request.args.get('mode')
     parameter = request.args.get('parameter')
     all_idiom, group = filter_logic(mode, parameter)
-    result = get_max_group(all_idiom, group, 3)
+    result = get_max_group(all_idiom, group, 6)
     return jsonify({'status': 0, 'message': 'success', 'result': result})
 
 @app.route('/', methods=['GET'])

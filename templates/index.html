@@ -18,19 +18,27 @@
             <div class="col-sm-8">
                 <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio" name="mode" id="mode0" value="0" checked>
-                    <label class="form-check-label" for="mode0">0</label>
+                    <label class="form-check-label" for="mode0">拼音1</label>
                   </div>
                   <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio" name="mode" id="mode1" value="1">
-                    <label class="form-check-label" for="mode1">1</label>
+                    <label class="form-check-label" for="mode1">拼音2</label>
                   </div>
                   <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio" name="mode" id="mode2" value="2">
-                    <label class="form-check-label" for="mode2">2</label>
+                    <label class="form-check-label" for="mode2">汉兜1</label>
                   </div>
                   <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio" name="mode" id="mode3" value="3">
-                    <label class="form-check-label" for="mode3">3</label>
+                    <label class="form-check-label" for="mode3">汉兜2</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="mode" id="mode4" value="4">
+                    <label class="form-check-label" for="mode4">文字正则</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="mode" id="mode5" value="5">
+                    <label class="form-check-label" for="mode5">拼音正则</label>
                   </div>
             </div>
         </div>
@@ -72,6 +80,12 @@
                         break
                     case '3':
                         $("#parameter").attr('placeholder', '各执一词 4212,00 11 12 22 0010 1022')
+                        break
+                    case '4':
+                        $("#parameter").attr('placeholder', '^..之急$')
+                        break
+                    case '5':
+                        $("#parameter").attr('placeholder', '^.+zhi ji$')
                         break
                 }
                 $("#parameter").val('')
