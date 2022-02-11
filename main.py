@@ -273,6 +273,8 @@ def filter_group_mode1(parameter, group, hits):
 def predict():
     mode = request.args.get('mode')
     parameter = request.args.get('parameter')
+    if len(trim_space(parameter)) == 0:
+        return jsonify({'status': 1, 'message': '请输入参数', 'result': []})
     all_idiom, group = filter_logic(mode, parameter)
     result = get_max_group(all_idiom, group, 6)
     return jsonify({'status': 0, 'message': 'success', 'result': result})
