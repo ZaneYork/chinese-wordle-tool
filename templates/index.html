@@ -82,7 +82,12 @@
                         text = result.result.map(function(item){
                             return item.word + '\t' + item.pinyin
                         }).join('\n')
-                        $('#result').val(text)
+                        if(!text){
+                            $('#result').val('无匹配结果')
+                        }
+                        else{
+                            $('#result').val(text)
+                        }
                     }
                     else {
                         $('#result').val(result)

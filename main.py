@@ -220,9 +220,11 @@ def print_max_group(all_idiom, group, num):
         print(item)
 
 def get_max_group(all_idiom, group, num):
+    result = list()
+    if(len(group) == 0):
+        return result
     group['pinyin_c'] = group.apply(lambda x: (math.log(x['frequency'], 2)/16 + 1) * len(set(trim_space(x['pinyin_r']))), axis=1)
     ret_list = group.nlargest(num, ['pinyin_c', 'frequency']).index.tolist()
-    result = list()
     for i in ret_list:
         result.append(json.loads(all_idiom.loc[i].to_json(orient = 'index',force_ascii=False)))
     return result
