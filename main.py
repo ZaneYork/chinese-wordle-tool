@@ -101,8 +101,12 @@ def init():
     global all_idiom
     if os.path.exists("all_idiom.csv"):
         all_idiom = pd.read_csv('all_idiom.csv')
-        all_idiom["pinyin_initials"].str.split(",").explode("splited").value_counts().to_json()
-        all_idiom["pinyin_finals"].str.split(",").explode("splited").value_counts().to_json()
+        # all_idiom["pinyin_initials"].str.split(",").explode("splited").value_counts().to_json()
+        # all_idiom["pinyin_finals"].str.split(",").explode("splited").value_counts().to_json()
+        # four_idiom = all_idiom[all_idiom['word'].str.len() == 4]
+        # four_idiom["tone_len"] = four_idiom.apply(lambda x: len(set(x['pinyin_tone'])), axis=1) 
+        # four_idiom = four_idiom[four_idiom['tone_len'] == 4]
+        # four_idiom["pinyin_tone"].value_counts().to_json()
     else:
         all_idiom = pd.read_json('idiom.json')
         idiom_frequency = pd.read_csv('idiom_frequency.csv')
@@ -313,7 +317,7 @@ def main(argv):
     # mode = '1'
     # parameter = 'bai vvv vv vvv,012 000 00 000;bai tou er xin,012 010 10 001'
     mode = '2'
-    parameter = '2134'
+    parameter = '1243'
     # mode = '3'
     # parameter = '行之有效,00 11 10 00 0100 1101;各执一词,00 11 12 22 0010 1022'
     num = 6
@@ -342,5 +346,5 @@ if __name__ == '__main__':
     current_work_dir = os.path.dirname(__file__)
     os.chdir(current_work_dir)
     init()
-    # main(sys.argv[1:])
-    app.run(debug=True, host="0.0.0.0")
+    main(sys.argv[1:])
+    # app.run(debug=True, host="0.0.0.0")
