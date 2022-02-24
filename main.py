@@ -342,5 +342,5 @@ if __name__ == '__main__':
     current_work_dir = os.path.dirname(__file__)
     os.chdir(current_work_dir)
     init()
-    main(sys.argv[1:])
-    # app.run(debug=True, host="0.0.0.0")
+    # main(sys.argv[1:])
+    app.run(debug=True, host="0.0.0.0")
